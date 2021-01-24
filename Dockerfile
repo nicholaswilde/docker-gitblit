@@ -1,64 +1,62 @@
-FROM openjdk:8-jre-slim
+FROM adoptopenjdk/openjdk8:jdk8u-ubuntu-nightly-slim
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever packages get added
 RUN groupadd -r -g 8117 gitblit && useradd -r -M -g gitblit -u 8117 -d /opt/gitblit gitblit
 
+ARG VERSION=1.9.1
+ARG CHECKSUM=c0b3095add8cb935f14a9ad1db571be74144f1c71f6495769390b94ca6b7525f
 
-ENV GITBLIT_VERSION 1.9.1
-ENV GITBLIT_DOWNLOAD_SHA c0b3095add8cb935f14a9ad1db571be74144f1c71f6495769390b94ca6b7525f
-
-ENV GITBLIT_DOWNLOAD_URL https://github.com/gitblit/gitblit/releases/download/v${GITBLIT_VERSION}/gitblit-${GITBLIT_VERSION}.tar.gz
+ENV GITBLIT_DOWNLOAD_URL https://github.com/gitblit/gitblit/releases/download/v${VERSION}/gitblit-${VERSION}.tar.gz
 
 # Install fetch dependencies, and gsou to step down from root
-RUN set -eux ; \
-    apt-get update && apt-get install -y --no-install-recommends \
-        wget \
-        gosu \
-        ; \
-    rm -rf /var/lib/apt/lists/* ; \
-# Download and install Gitblit
-    wget --progress=bar:force:noscroll -O gitblit.tar.gz ${GITBLIT_DOWNLOAD_URL} ; \
-    echo "${GITBLIT_DOWNLOAD_SHA} *gitblit.tar.gz" | sha256sum -c - ; \
-    mkdir -p /opt/gitblit ; \
-    tar xzf gitblit.tar.gz -C /opt/gitblit --strip-components 1 ; \
-    rm -f gitblit.tar.gz ; \
-# Remove unneeded scripts.
-    rm -f /opt/gitblit/install-service-*.sh ; \
-    rm -r /opt/gitblit/service-*.sh ;
+RUN \
+  set -eux ; \
+  echo "**** install packages ****" && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+    wget \
+    gosu \
+    ; \
+  rm -rf /var/lib/apt/lists/* ; \
+  # Download and install Gitblit
+  echo "**** download gitblit ****" && \
+  wget --progress=bar:force:noscroll -O gitblit.tar.gz ${GITBLIT_DOWNLOAD_URL} ; \
+  echo "${CHECKSUM} *gitblit.tar.gz" | sha256sum -c - ; \
+  echo "**** install gitblit ****" && \
+  mkdir -p /opt/gitblit ; \
+  tar xzf gitblit.tar.gz -C /opt/gitblit --strip-components 1 ; \
+  rm -f gitblit.tar.gz ; \
+  # Remove unneeded scripts.
+  rm -f /opt/gitblit/install-service-*.sh ; \
+  rm -r /opt/gitblit/service-*.sh ;
 
-
-
-
-
-
-
-
-LABEL maintainer="James Moger <james.moger@gitblit.com>, Florian Zschocke <f.zschocke+gitblit@gmail.com>" \
-      org.label-schema.schema-version="1.0" \
-      org.label-schema.name="gitblit" \
-      org.label-schema.description="Gitblit is an open-source, pure Java stack for managing, viewing, and serving Git repositories." \
-      org.label-schema.url="http://gitblit.com" \
-      org.label-schema.version="${GITBLIT_VERSION}"
-
+LABEL \
+  maintainer="nicholaswilde" \
+  org.label-schema.schema-version="1.0" \
+  org.label-schema.name="gitblit" \
+  org.label-schema.description="Gitblit is an open-source, pure Java stack for managing, viewing, and serving Git repositories." \
+  org.label-schema.url="http://gitblit.com" \
+  org.label-schema.version="${VERSION}"
 
 ENV GITBLIT_VAR /var/opt/gitblit
 
 # Move the data files to a separate directory and set some defaults
-RUN set -eux ; \
-    mkdir -p -m 0775 $GITBLIT_VAR ; \
-    gbetc=$GITBLIT_VAR/etc ; \
-    gbsrv=$GITBLIT_VAR/srv ; \
-    mkdir -p -m 0775 $gbsrv ; \
-    mv /opt/gitblit/data/git $gbsrv ; \
-    ln -s $gbsrv/git /opt/gitblit/data/git ; \
-    mv /opt/gitblit/data $gbetc ; \
-    ln -s $gbetc /opt/gitblit/data ; \
-    \
-# Make sure that the most current default properties file is available
-# unedited to Gitblit.
-    mkdir -p /opt/gitblit/etc/ ; \
-    mv $gbetc/defaults.properties /opt/gitblit/etc ; \
-    printf "\
+RUN \
+  set -eux ; \
+  mkdir -p -m 0775 $GITBLIT_VAR ; \
+  gbetc=$GITBLIT_VAR/etc ; \
+  gbsrv=$GITBLIT_VAR/srv ; \
+  mkdir -p -m 0775 $gbsrv ; \
+  mv /opt/gitblit/data/git $gbsrv ; \
+  ln -s $gbsrv/git /opt/gitblit/data/git ; \
+  mv /opt/gitblit/data $gbetc ; \
+  ln -s $gbetc /opt/gitblit/data ; \
+  \
+  # Make sure that the most current default properties file is available
+  # unedited to Gitblit.
+  mkdir -p /opt/gitblit/etc/ ; \
+  mv $gbetc/defaults.properties /opt/gitblit/etc ; \
+  printf "\
 6 c\\\n\
 \\\n\
 \\\n\
@@ -81,15 +79,15 @@ s/^server.redirectToHttpsPort.*/#server.redirectToHttpsPort = true/\n\
     " > /tmp/defaults.sed ; \
     sed -f /tmp/defaults.sed /opt/gitblit/etc/defaults.properties > $gbetc/defaults.properties ; \
     rm -f /tmp/defaults.sed ; \
-#   Check that removal worked
+    #   Check that removal worked
     grep  "^git.repositoriesFolder" $gbetc/defaults.properties && false ; \
     grep  "^filestore.storageFolder" $gbetc/defaults.properties && false ; \
     grep  "^tickets.indexFolder" $gbetc/defaults.properties && false ; \
     grep  "^federation.proposalsFolder" $gbetc/defaults.properties && false ; \
     grep  "^server.tempFolder" $gbetc/defaults.properties && false ; \
     \
-# Create a system.properties file that sets the defaults for this docker setup.
-# This is not available outside and should not be changed.
+    # Create a system.properties file that sets the defaults for this docker setup.
+    # This is not available outside and should not be changed.
     echo "git.repositoriesFolder = ${gbsrv}/git" >  /opt/gitblit/etc/system.properties ; \
     echo "filestore.storageFolder = ${gbsrv}/lfs" >> /opt/gitblit/etc/system.properties ; \
     echo "tickets.indexFolder = ${gbsrv}/tickets/lucene" >> /opt/gitblit/etc/system.properties ; \
@@ -99,7 +97,7 @@ s/^server.redirectToHttpsPort.*/#server.redirectToHttpsPort = true/\n\
     echo "server.httpsPort = 8443" >> /opt/gitblit/etc/system.properties ; \
     echo "server.redirectToHttpsPort = true" >> /opt/gitblit/etc/system.properties ; \
     \
-# Create a properties file for settings that can be set via environment variables from docker
+    # Create a properties file for settings that can be set via environment variables from docker
     printf '\
 ''#\n\
 ''# GITBLIT-DOCKER.PROPERTIES\n\
@@ -163,12 +161,9 @@ include = gitblit-docker.properties\n\
     cp -a $gbetc /opt/gitblit/vog-etc ; \
     cp -a $gbsrv/git/project.mkd /opt/gitblit/srv-project.mkd ;
 
-
-
 # Provide script and data to migrate from earlier images to the new layout.
 COPY migrate/migrate-data /usr/local/bin/
 COPY migrate/non-etc-files migrate/defaults.* /usr/local/share/gitblit/
-
 
 # Setup the Docker container environment
 ARG GITBLIT_RPC
@@ -179,9 +174,8 @@ WORKDIR /opt/gitblit
 
 VOLUME $GITBLIT_VAR
 
-
-COPY docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
+COPY entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["entrypoint.sh"]
 
 # 8080:  HTTP front-end and transport
 # 8443:  HTTPS front-end and transport
