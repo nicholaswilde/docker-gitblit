@@ -8,13 +8,15 @@ ARG CHECKSUM=c0b3095add8cb935f14a9ad1db571be74144f1c71f6495769390b94ca6b7525f
 ENV GITBLIT_DOWNLOAD_URL https://github.com/gitblit/gitblit/releases/download/v${VERSION}/gitblit-${VERSION}.tar.gz
 
 # Install fetch dependencies, and gsou to step down from root
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN \
   set -eux ; \
   echo "**** install packages ****" && \
   apt-get update && \
   apt-get install -y --no-install-recommends \
-    wget \
-    gosu \
+    wget=1.20.3-1ubuntu1 \
+    gosu=1.10-1 \
+    ca-certificates=20201027ubuntu0.20.04.1 \
     ; \
   rm -rf /var/lib/apt/lists/* ; \
   # Download and install Gitblit
@@ -27,7 +29,8 @@ RUN \
   rm -f gitblit.tar.gz ; \
   # Remove unneeded scripts.
   rm -f /opt/gitblit/install-service-*.sh ; \
-  rm -r /opt/gitblit/service-*.sh ;
+  rm -r /opt/gitblit/service-*.sh ; \
+  apt-get remove -y --purge wget
 
 LABEL \
   maintainer="nicholaswilde" \
@@ -41,12 +44,15 @@ LABEL \
 ENV GITBLIT_VAR /var/opt/gitblit
 
 # Move the data files to a separate directory and set some defaults
+# hadolint ignore=SC2059,SC2129,SC2016
 RUN \
   set -eux ; \
-  mkdir -p -m 0775 $GITBLIT_VAR ; \
+  mkdir -p $GITBLIT_VAR ; \
+  chmod 0775 $GITBLIT_VAR ; \
   gbetc=$GITBLIT_VAR/etc ; \
   gbsrv=$GITBLIT_VAR/srv ; \
-  mkdir -p -m 0775 $gbsrv ; \
+  mkdir -p $gbsrv ; \
+  chmod 0775 $gbsrv ; \
   mv /opt/gitblit/data/git $gbsrv ; \
   ln -s $gbsrv/git /opt/gitblit/data/git ; \
   mv /opt/gitblit/data $gbetc ; \
