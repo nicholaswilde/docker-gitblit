@@ -17,6 +17,7 @@ RUN \
     wget=1.20.3-1ubuntu1 \
     gosu=1.10-1 \
     ca-certificates=20201027ubuntu0.20.04.1 \
+    apt-transport-https \
     ; \
   rm -rf /var/lib/apt/lists/* ; \
   # Download and install Gitblit
