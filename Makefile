@@ -56,7 +56,7 @@ rund:
 	docker run -d --rm --name $(CONTAINER_NAME)-$(CONTAINER_INSTANCE) $(PORTS) $(ENV) $(NS)/$(IMAGE_NAME):$(VERSION)-ls$(LS)
 
 shell:
-	docker run --rm $(PORTS) $(ENV) $(NS)/$(IMAGE_NAME):$(VERSION)-ls$(LS) /bin/bash
+	docker exec -it $(CONTAINER_NAME)-$(CONTAINER_INSTANCE) /bin/bash
 
 ## stop   	: Stop the Docker container
 stop:
