@@ -2,10 +2,9 @@ FROM adoptopenjdk/openjdk8:jdk8u-ubuntu-nightly-slim
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever packages get added
 RUN groupadd -r -g 8117 gitblit && useradd -r -M -g gitblit -u 8117 -d /opt/gitblit gitblit
-
 ARG VERSION=1.9.1
+ARG BUILD_DATE
 ARG CHECKSUM=c0b3095add8cb935f14a9ad1db571be74144f1c71f6495769390b94ca6b7525f
-
 ENV GITBLIT_DOWNLOAD_URL https://github.com/gitblit/gitblit/releases/download/v${VERSION}/gitblit-${VERSION}.tar.gz
 
 # Install fetch dependencies, and gsou to step down from root
@@ -32,6 +31,7 @@ RUN \
 
 LABEL \
   maintainer="nicholaswilde" \
+  build_version="Version:- ${VERSION} Build-date:- ${BUILD_DATE}" \
   org.label-schema.schema-version="1.0" \
   org.label-schema.name="gitblit" \
   org.label-schema.description="Gitblit is an open-source, pure Java stack for managing, viewing, and serving Git repositories." \
@@ -173,8 +173,8 @@ ENV PATH /opt/gitblit:$PATH
 WORKDIR /opt/gitblit
 
 VOLUME $GITBLIT_VAR
-
 COPY entrypoint.sh /usr/local/bin/
+RUN chmod a+x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
 
 # 8080:  HTTP front-end and transport
