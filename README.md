@@ -295,16 +295,9 @@ Mount your not migrated volume under `/var/opt/gitblit/etc` which is the default
 $ sudo docker run -v /some/path/data:/opt/gitblit-data nicholaswilde/gitblit --baseFolder /opt/gitblit-data
 ```
 
-# Image Variants
-The `nicholaswilde/gitblit` images come in multiple flavors.
+# Images
 
-## `nicholaswilde/gitblit:<version>`
-
-This is the defacto image. If you are unsure about what your needs are, you probably want to use this one. It is designed to be used both as a throw away container, as well as the base to build other images off of.
-
-## `nicholaswilde/gitblit:<version>-rpc`
-
-This image has RPC management and administration already enabled, so that you may use a remote client like the Gitblit Manager to configure settings, manage repositories, or manage users.
+The default image has RPC management and administration already enabled, so that you may use a remote client like the Gitblit Manager to configure settings, manage repositories, or manage users.
 
 Do not use the HTTP port over a network on this image for RPC, because passwords are insecurely transmitted from your browser/RPC client using Basic authentication!
 
