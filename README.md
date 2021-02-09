@@ -295,6 +295,14 @@ Mount your not migrated volume under `/var/opt/gitblit/etc` which is the default
 $ sudo docker run -v /some/path/data:/opt/gitblit-data nicholaswilde/gitblit --baseFolder /opt/gitblit-data
 ```
 
+## Development
+
+See [Wiki](https://github.com/nicholaswilde/docker-template/wiki/Development).
+
+## Troubleshooting
+
+See [Wiki](https://github.com/nicholaswilde/docker-template/wiki/Troubleshooting).
+
 # Images
 
 The default image has RPC management and administration already enabled, so that you may use a remote client like the Gitblit Manager to configure settings, manage repositories, or manage users.
