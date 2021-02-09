@@ -295,11 +295,11 @@ Mount your not migrated volume under `/var/opt/gitblit/etc` which is the default
 $ sudo docker run -v /some/path/data:/opt/gitblit-data nicholaswilde/gitblit --baseFolder /opt/gitblit-data
 ```
 
-## Development
+# Development
 
 See [Wiki](https://github.com/nicholaswilde/docker-template/wiki/Development).
 
-## Troubleshooting
+# Troubleshooting
 
 See [Wiki](https://github.com/nicholaswilde/docker-template/wiki/Troubleshooting).
 
