@@ -1,0 +1,28 @@
+---
+port:
+  tcp:8080:
+    listening: true
+    ip:
+      - 0.0.0.0
+  tcp:8443:
+    listening: true
+    ip:
+      - 0.0.0.0
+  tcp:9418:
+    listening: true
+    ip:
+      - 0.0.0.0
+  tcp:29418:
+    listening: true
+    ip:
+      - 0.0.0.0
+process:
+  java:
+    running: true
+http:
+  https://localhost:8443:
+    status: 200
+    allow-insecure: true
+    no-follow-redirects: false
+    timeout: 0
+    body: []

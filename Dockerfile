@@ -31,6 +31,7 @@ RUN \
   rm -r /opt/gitblit/service-*.sh ; \
   apt-get remove -y --purge wget
 
+# hadolint ignore=DL3048
 LABEL \
   maintainer="nicholaswilde" \
   build_version="Version:- ${VERSION} Build-date:- ${BUILD_DATE}" \
